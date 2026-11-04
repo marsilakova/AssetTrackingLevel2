@@ -1,0 +1,6 @@
+Laptop;Sweden;Apple;MacBook Pro;2022-08-10;1650
+Phone;Sweden;Samsung;Galaxy S23;2024-11-01;950
+Laptop;Turkey;Lenovo;ThinkPad X1;2023-01-05;2099
+Phone;USA;Apple;iPhone 15;2025-02-01;1200
+Laptop;Sweden;Lenovo;ThinkPadX1;2024-03-05;130
+Phone;USA;Samsung;GAlaxyS23;2025-06-01;95
