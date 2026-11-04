@@ -83,3 +83,4 @@ This project is fully configured for a seamless graphical workspace environment 
 5. A console window will pop up. To test the persistent backup buffer, type exit into the prompt. The active runtime data will automatically commit to the local assets\_storage.txt database file within the root directory.
 
 ![Console Demo](Consol-bild-2026.png)
+!([Console Demo](assets-storeg.png)
