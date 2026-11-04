@@ -1,4 +1,4 @@
-Asset Tracking System (Week 45 Mini Project)
+# Asset Tracking System (Week 45 Mini Project)
 
 
 
@@ -6,7 +6,7 @@ A clean, modular C# console application designed to track office hardware assets
 
 
 
-🚀 Learning Goals Achieved
+## 🚀 Learning Goals Achieved
 
 • Classes \& Objects / Inheritance: Built on a robust abstract base architecture (Asset.cs) extended by specialized sub-classes (Laptop.cs, MobilePhone.cs).
 
@@ -24,7 +24,7 @@ A clean, modular C# console application designed to track office hardware assets
 
 
 
-🎨 Asset Lifespan Telemetry (Business Rules)
+## 🎨 Asset Lifespan Telemetry (Business Rules)
 
 To optimize IT warehouse management, the terminal dynamically colors rows using strict real-time deadlines calculated against the current calendar day:
 
@@ -40,7 +40,7 @@ To optimize IT warehouse management, the terminal dynamically colors rows using 
 
 
 
-📋 Table Output Structure
+## 📋 Table Output Structure
 
 The system automatically tracks financial values using worldwide localization logic (e.g., converting USD entries to local currencies like SEK or EUR depending on warehouse office registration). The output grid formats strictly as follows:
 
@@ -68,19 +68,18 @@ USA          Phone      Apple      iPhone 15       1200 USD        2025-02-01
 
 
 
-🛠️ 🛠️ How to Build and Run
+## 🛠️ 🛠️ How to Build and Run
 
 This project is fully configured for a seamless graphical workspace environment in Visual Studio:
 
+1. Clone or download this repository to your local computer.
 
+2. Open the solution file (.sln) inside Visual Studio 2022 (or later).
 
-1\. Clone or download this repository to your local computer.
+3. Ensure that the .NET 8.0 runtime environment is selected.
 
-2\. Open the solution file (.sln) inside Visual Studio 2022 (or later).
+4. Click on the Green Arrow button (Start / Play) at the top of the interface to build and launch the terminal application.
 
-3\. Ensure that the .NET 8.0 runtime environment is selected.
+5. A console window will pop up. To test the persistent backup buffer, type exit into the prompt. The active runtime data will automatically commit to the local assets\_storage.txt database file within the root directory.
 
-4\. Click on the Green Arrow button (Start / Play) at the top of the interface to build and launch the terminal application.
-
-5\. A console window will pop up. To test the persistent backup buffer, type exit into the prompt. The active runtime data will automatically commit to the local assets\_storage.txt database file within the root directory.
 
