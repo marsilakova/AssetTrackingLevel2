@@ -84,3 +84,4 @@ This project is fully configured for a seamless graphical workspace environment 
 
 ![Console Demo](Consol-bild-2026.png)
 ![Console Demo](assets-storeg.png)
+# Refactorig GitHub Capitol (plan.txt)
