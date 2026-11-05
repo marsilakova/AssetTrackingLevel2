@@ -1,276 +1,271 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.NetworkInformation;
+using System.Globalization;
 
-namespace AssetTrackingLevel2
+namespace AssetTrackingLevel2;
+
+internal static class Program
 {
-    class Program
+    private const string StorageFileName = "assets_storage.txt";
+    private static readonly string StoragePath = Path.GetFullPath(
+        Path.Combine(AppContext.BaseDirectory, "..", "..", "..", StorageFileName));
+
+    private static void Main()
     {
-        // Den här raden skapar filen direkt i mappen på Skrivbordet (Desktop)
-        private static readonly string FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "assets_storage.txt");
+        List<Asset> assets = LoadFromFile();
 
-        static void Main(string[] args)
+        Console.WriteLine("--- Asset Tracking System (Level 3 - Final) ---");
+        if (assets.Count > 0)
         {
-            // 1. LÄSER FRÅN FIL: Hämtar sparade tillgångar vid start (Krav för Level 3)
-            List<Asset> assets = LoadFromFile();
-
-            Console.WriteLine("--- Asset Tracking System (Level 3 - Final) ---");
-            if (assets.Count > 0)
-            {
-                Console.WriteLine($"[System] Loaded {assets.Count} assets from assets_storage.txt");
-            }
-            Console.WriteLine("Enter assets. Type 'exit' to save and view the list.\n");
-
-            // Standard testdata om filen startas tom för första gången
-            if (assets.Count == 0)
-            {
-                assets.Add(new Laptop("Apple", "MacBook Pro", new DateTime(2022, 08, 10), 1650, "Sweden"));
-                assets.Add(new MobilePhone("Samsung", "Galaxy S23", new DateTime(2024, 11, 01), 950, "Sweden"));
-                assets.Add(new Laptop("Lenovo", "ThinkPad X1", new DateTime(2023, 01, 05), 2099, "Turkey"));
-                assets.Add(new MobilePhone("Apple", "iPhone 15", new DateTime(2025, 02, 01), 1200, "USA"));
-                // 🟥 RED: Köpt i augusti 2023. 3 år gick ut i augusti 2026 (livslängden har tagit slut).
-               // assets.Add(new Laptop("Apple", "MacBook Pro", new DateTime(2023, 08, 10), 1650, "Sweden"));
-
-                // 🟨 YELLOW: Куплен в марте 2024. 3 года истекают в марте 2027. До дедлайна меньше 6 месяцев!
-
-                //assets.Add(new Laptop("Lenovo", "ThinkPad X1", new DateTime(2024, 03, 15), 1300, "Sweden"));
-
-                // ⬜ БЕЛЫЙ: Köpt i juni 2025. Löper ut först 2028. Elementet är stabilt.
-                //assets.Add(new MobilePhone("Samsung", "Galaxy S23", new DateTime(2025, 06, 01), 950, "Sweden"));
-            }
-
-        
-
-            while (true)
-            {
-                Console.Write("Enter Asset Type (Laptop / Phone) or 'exit': ");
-                string typeInput = Console.ReadLine()?.Trim().ToLower() ??"";
-                if (typeInput == "exit") break;
-
-                if (typeInput != "laptop" && typeInput != "phone")
-                {
-                    Console.WriteLine("Invalid asset type. Enter 'Laptop' or 'Phone'.\n");
-                    continue;
-                }
-
-                Console.Write("Enter Office (e.g. Sweden, USA, Turkey): ");
-                string office = Console.ReadLine() ??"";
-
-                Console.Write("Enter Brand: ");
-                string brand = Console.ReadLine() ??"";
-
-                Console.Write("Enter Model: ");
-                string model = Console.ReadLine() ??"";
-
-                DateTime purchaseDate;
-                while (true)
-                {
-                    Console.Write("Enter Purchase Date (yyyy-MM-dd): ");
-                    if (DateTime.TryParse(Console.ReadLine(), out purchaseDate)) break;
-                    Console.WriteLine("Invalid format. Use YYYY-MM-DD.");
-                }
-
-                double priceUSD;
-                while (true)
-                {
-                    Console.Write("Enter Price (USD): ");
-                    if (double.TryParse(Console.ReadLine(), out priceUSD)) break;
-                    Console.WriteLine("Invalid price. Enter a number.");
-                }
-
-                Asset newAsset = typeInput == "laptop"
-                ? new Laptop(brand, model, purchaseDate, priceUSD, office)
-                : new MobilePhone(brand, model, purchaseDate, priceUSD, office);
-
-                assets.Add(newAsset);
-                Console.WriteLine("Asset added!\n");
-            }
-
-            // 2. SPARAR TILL FIL: Skriver ner listan till textfilen (Krav för Level 3)
-            SaveToFile(assets);
-
-            // Visar din fina sorterade tabell
-            DisplayAssets(assets);
+            Console.WriteLine($"[System] Loaded {assets.Count} assets from {StorageFileName}");
         }
 
-        static void DisplayAssets(List<Asset> assets)
+        Console.WriteLine("Enter assets. Type 'exit' to save and view the list.\n");
+
+        if (assets.Count == 0)
         {
-            if (assets.Count == 0) return;
-
-            // Sortering enligt Level 3: Först efter kontor, sedan efter inköpsdatum
-            var sortedAssets = assets
-            .OrderBy(a => a.Office)
-            .ThenBy(a => a.PurchaseDate)
-            .ToList();
-
-            Console.WriteLine("\nFINAL ASSET LIST (Level 3)");
-            Console.WriteLine(new string('-', 92));
-            // Formaterar hela raden genom att omvandla datumet till text först
-            // return $"{Office,-10} {AssetType,-10} {Brand,-12} {Model,-15} {(LocalPrice + " " + Currency),-12} {PurchaseDate.ToString("yyyy-MM-dd"),-15} {Status}";
-            //Console.WriteLine($"{"Office",-12} {"Type",-10} {"Brand",-10} {"Model",-15} {"Price",-15} {"Purchase Date",-15} {"Status",-10}");
-            Console.WriteLine(new string('-', 92));
-
-            DateTime today = DateTime.Today;
-
-            foreach (var asset in sortedAssets)
-            {
-                DateTime endOfLifeDate = asset.PurchaseDate.AddYears(3);
-                TimeSpan timeLeft = endOfLifeDate - today;
-                double daysLeft = timeLeft.TotalDays;
-
-                string statusText = "";
-
-                if (daysLeft < 90)
-                {
-                    statusText = "RED";
-                    Console.ForegroundColor = ConsoleColor.Red;
-                }
-                else if (daysLeft < 180)
-                {
-                    statusText = "YELLOW";
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                }
-                else
-                {
-                    Console.ResetColor();
-                }
-
-                // Formatera priset till "VÄRDE VALUTA" (t.ex. 16500 SEK) enligt skärmbilden
-                string priceText = $"{asset.LocalPrice:F0} {asset.Currency}";
-
-                // Utskrift av raden med exakt kolumnordning
-                Console.WriteLine($"{asset.Office,-12} {asset.AssetType,-10} {asset.Brand,-10} {asset.Model,-15} {priceText,-15} {asset.PurchaseDate,-15:yyyy-MM-dd} {statusText,-10}");
-               
-
-                //string priceText = $"{asset.Office,-12} {asset.AssetType,-10} {asset.Brand,-10} {asset.Model,-15} {priceText,-15} {asset.PurchaseDate:yyyy-MM-dd,-15} {statusText,-10}";
-            }
-
-            Console.ResetColor();
-            Console.WriteLine(new string('-', 92));
-        }
-        // =========================================================================
-        // CORRECTED FILE HANDLING (Level 3 - Textbaserad Databas
-        // =========================================================================
-        private static void SaveToFile(List<Asset> assets)
-        {
-            try
-            {
-                using (StreamWriter writer = new StreamWriter(FileName, false))
-                {
-                    foreach (var a in assets)
-                    {
-                        // Vi skriver data genom separatorn ';', tar de exakta egenskaperna
-                        writer.WriteLine(
-                        $"{a.AssetType};{a.Office};{a.Brand};{a.Model};{a.PurchaseDate:yyyy-MM-dd};{a.PriceUSD}");
-                    }
-                }
-                Console.WriteLine("\n[File System] Data successfully saved to assets_storage.txt");
-            }
-            catch (Exception)
-            {
-                Console.WriteLine(
-
-                        "Error saving to file: {ex.Message}");
-            }
+            AddDefaultAssets(assets);
         }
 
-        private static List<Asset> LoadFromFile()
+        ReadAssetsFromConsole(assets);
+        SaveToFile(assets);
+        DisplayAssets(assets);
+    }
+
+    private static void AddDefaultAssets(List<Asset> assets)
+    {
+        assets.Add(new Laptop("Apple", "MacBook Pro", new DateTime(2022, 8, 10), 1650, "Sweden"));
+        assets.Add(new MobilePhone("Samsung", "Galaxy S23", new DateTime(2024, 11, 1), 950, "Sweden"));
+        assets.Add(new Laptop("Lenovo", "ThinkPad X1", new DateTime(2023, 1, 5), 2099, "Turkey"));
+        assets.Add(new MobilePhone("Apple", "iPhone 15", new DateTime(2025, 2, 1), 1200, "USA"));
+    }
+
+    private static void ReadAssetsFromConsole(List<Asset> assets)
+    {
+        while (true)
         {
-            List<Asset> list = new List<Asset>();
-            if (!File.Exists(FileName)) return list;
-
-            try
+            string type = ReadLine("Enter Asset Type (Laptop / Phone) or 'exit': ").Trim();
+            if (type.Equals("exit", StringComparison.OrdinalIgnoreCase))
             {
-                string[] lines = File.ReadAllLines(FileName);
-                foreach (string line in lines)
+                return;
+            }
+
+            if (!type.Equals("laptop", StringComparison.OrdinalIgnoreCase) &&
+                !type.Equals("phone", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine("Invalid asset type. Enter 'Laptop' or 'Phone'.\n");
+                continue;
+            }
+
+            string office = ReadRequired("Enter Office (e.g. Sweden, USA, Turkey): ");
+            string brand = ReadRequired("Enter Brand: ");
+            string model = ReadRequired("Enter Model: ");
+            DateTime purchaseDate = ReadDate();
+            double priceUsd = ReadPrice();
+
+            Asset asset = type.Equals("laptop", StringComparison.OrdinalIgnoreCase)
+                ? new Laptop(brand, model, purchaseDate, priceUsd, office)
+                : new MobilePhone(brand, model, purchaseDate, priceUsd, office);
+
+            assets.Add(asset);
+            Console.WriteLine("Asset added!\n");
+        }
+    }
+
+    private static DateTime ReadDate()
+    {
+        while (true)
+        {
+            string value = ReadLine("Enter Purchase Date (yyyy-MM-dd): ");
+            if (DateTime.TryParseExact(
+                value,
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out DateTime date))
+            {
+                return date;
+            }
+
+            Console.WriteLine("Invalid format. Use YYYY-MM-DD.");
+        }
+    }
+
+    private static double ReadPrice()
+    {
+        while (true)
+        {
+            string value = ReadLine("Enter Price (USD): ");
+            if (double.TryParse(value, NumberStyles.Float, CultureInfo.CurrentCulture, out double price) &&
+                price >= 0)
+            {
+                return price;
+            }
+
+            Console.WriteLine("Invalid price. Enter a non-negative number.");
+        }
+    }
+
+    private static string ReadRequired(string prompt)
+    {
+        while (true)
+        {
+            string value = ReadLine(prompt).Trim();
+            if (value.Length > 0)
+            {
+                return value;
+            }
+
+            Console.WriteLine("Value cannot be empty.");
+        }
+    }
+
+    private static string ReadLine(string prompt)
+    {
+        Console.Write(prompt);
+        return Console.ReadLine() ?? string.Empty;
+    }
+
+    private static void DisplayAssets(List<Asset> assets)
+    {
+        if (assets.Count == 0)
+        {
+            return;
+        }
+
+        Console.WriteLine("\nFINAL ASSET LIST (Level 3)");
+        Console.WriteLine(new string('-', 92));
+        Console.WriteLine("Office       Type       Brand      Model           Price           Purchase Date   Status");
+        Console.WriteLine(new string('-', 92));
+
+        DateTime today = DateTime.Today;
+        foreach (Asset asset in assets.OrderBy(a => a.Office).ThenBy(a => a.PurchaseDate))
+        {
+            double daysLeft = (asset.PurchaseDate.AddYears(3) - today).TotalDays;
+            string status = GetStatus(daysLeft, out ConsoleColor? color);
+
+            if (color.HasValue)
+            {
+                Console.ForegroundColor = color.Value;
+            }
+
+            string price = $"{asset.LocalPrice:F0} {asset.Currency}";
+            Console.WriteLine(
+                $"{asset.Office,-12} {asset.AssetType,-10} {asset.Brand,-10} {asset.Model,-15} " +
+                $"{price,-15} {asset.PurchaseDate,-15:yyyy-MM-dd} {status,-10}");
+        }
+
+        Console.ResetColor();
+        Console.WriteLine(new string('-', 92));
+    }
+
+    private static string GetStatus(double daysLeft, out ConsoleColor? color)
+    {
+        if (daysLeft < 90)
+        {
+            color = ConsoleColor.Red;
+            return "RED";
+        }
+
+        if (daysLeft < 180)
+        {
+            color = ConsoleColor.Yellow;
+            return "YELLOW";
+        }
+
+        color = null;
+        return string.Empty;
+    }
+
+    private static void SaveToFile(List<Asset> assets)
+    {
+        try
+        {
+            using StreamWriter writer = new(StoragePath, false);
+            foreach (Asset asset in assets)
+            {
+                writer.WriteLine(
+                    string.Join(';',
+                        asset.AssetType,
+                        asset.Office,
+                        asset.Brand,
+                        asset.Model,
+                        asset.PurchaseDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                        asset.PriceUSD.ToString(CultureInfo.InvariantCulture)));
+            }
+
+            Console.WriteLine($"\n[File System] Data successfully saved to {StorageFileName}");
+        }
+        catch (IOException ex)
+        {
+            Console.WriteLine($"Error saving to file: {ex.Message}");
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Console.WriteLine($"Error saving to file: {ex.Message}");
+        }
+    }
+
+    private static List<Asset> LoadFromFile()
+    {
+        List<Asset> assets = [];
+        if (!File.Exists(StoragePath))
+        {
+            return assets;
+        }
+
+        try
+        {
+            foreach (string line in File.ReadLines(StoragePath))
+            {
+                if (TryParseAsset(line, out Asset? asset))
                 {
-                    if (string.IsNullOrWhiteSpace(line)) continue;
-
-                    // Разбиваем строку по знаку ';' в массив элементов
-                    string[] p = line.Split(';');
-                    if (p.Length < 6) continue;
-
-                    // ИСПОЛЬЗУЕМ ИНДЕКСЫ, [1], [2]... ДЛЯ КАЖДОГО СВОЙСТВА
-                    string type = p[0].ToLower();
-                    string office = p[1];
-                    string brand = p[2];
-                    string model = p[3];
-                    DateTime date = DateTime.Parse(p[4]);
-                    double price = double.Parse(p[5]);
-
-                    Asset asset = type == "laptop"
-                    ? new Laptop(brand, model, date, price, office)
-                    : new MobilePhone(brand, model, date, price, office);
-
-                    if (asset != null) list.Add(asset);
+                    assets.Add(asset);
                 }
             }
-            catch
-            {
-                // Если файл поврежден, просто возвращаем пустой список, чтобы не падать
-            }
-            return list;
         }
-        // =========================================================================
-        // NYA METODER FÖR FILHANTERING (Level 3 - Textbaserad Databas)
-        // =========================================================================
-        /* private static void SaveToFile(List<Asset> assets)
-         {
-             try
-             {
-                 using (StreamWriter writer = new StreamWriter(FileName, false))
-                 {
-                     foreach (var a in assets)
-                     {
-                         writer.WriteLine(
-                         "{a.AssetType};{a.Office};{a.Brand};{a.Model};{a.PurchaseDate:yyyy-MM-dd};{a.PriceUSD}");
-                     }
-                 }
-                 Console.WriteLine("\n[File System] Data successfully saved to assets_storage.txt");
-             }
-             catch (Exception ex)
-             {
-                 Console.WriteLine(
+        catch (IOException ex)
+        {
+            Console.WriteLine($"Error loading file: {ex.Message}");
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Console.WriteLine($"Error loading file: {ex.Message}");
+        }
 
-                         "Error saving to file: {ex.Message}");
-             }
-         }*/
+        return assets;
+    }
 
-        /* private static List<Asset> LoadFromFile()
-         {
-             List<Asset> list = new List<Asset>();
-             if (!File.Exists(FileName)) return list;
+    private static bool TryParseAsset(string line, out Asset? asset)
+    {
+        asset = null;
+        string[] fields = line.Split(';');
+        if (fields.Length != 6 || string.IsNullOrWhiteSpace(fields[0]))
+        {
+            return false;
+        }
 
-             try
-             {
-                 string[] lines = File.ReadAllLines(FileName);
-                 foreach (string line in lines)
-                 {
-                     if (string.IsNullOrWhiteSpace(line)) continue;
-                     string[] p = line.Split(';');
-                     if (p.Length < 6) continue;
+        bool validDate = DateTime.TryParseExact(
+            fields[4],
+            "yyyy-MM-dd",
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.None,
+            out DateTime purchaseDate);
+        bool validPrice = double.TryParse(
+            fields[5],
+            NumberStyles.Float,
+            CultureInfo.InvariantCulture,
+            out double priceUsd);
 
-                     string type = p[0].ToLower();
-                     string office = p[1];
-                     string brand = p[2];
-                     string model = p[3];
-                     DateTime date = DateTime.Parse(p[4]);
-                     double price = double.Parse(p[5]);
+        if (!validDate || !validPrice || priceUsd < 0)
+        {
+            return false;
+        }
 
-                     Asset asset = type == "laptop"
-                     ? new Laptop(brand, model, date, price, office)
-                     : new MobilePhone(brand, model, date, price, office);
+        asset = fields[0].Trim().Equals("laptop", StringComparison.OrdinalIgnoreCase)
+            ? new Laptop(fields[2], fields[3], purchaseDate, priceUsd, fields[1])
+            : fields[0].Trim().Equals("phone", StringComparison.OrdinalIgnoreCase)
+                ? new MobilePhone(fields[2], fields[3], purchaseDate, priceUsd, fields[1])
+                : null;
 
-                     list.Add(asset);
-                 }
-             }
-             catch
-             {
-                 // Returnerar tom lista vid fel så att programmet inte kraschar
-             }
-             return list;
-         }*/
+        return asset is not null;
     }
 }

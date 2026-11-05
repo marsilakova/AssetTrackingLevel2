@@ -1,0 +1,26 @@
+Refactoring the Asset Tracking console application
+Refactoring the Asset Tracking console application
+Understanding
+Review Program.cs, verify resource management and file handling, eliminate potential bugs, and improve readability without changing the main user workflow.
+
+Assumptions
+The primary refactoring target is Program.cs; the public Asset, Laptop, and MobilePhone models remain unchanged.
+The file format remains compatible: type;office;brand;model;yyyy-MM-dd;price.
+The application remains a synchronous .NET 10 console application.
+
+Approach
+Split the main workflow into smaller methods for input, loading/saving, and display. Use CultureInfo and TryParse for predictable data parsing, handle corrupted lines correctly, and display exceptions when saving fails. Remove dead code, fix the error message format, and eliminate unused using directives.
+
+Key Files
+Program.cs — the main workflow, input/output, text-file serialization, and display.
+Asset.cs — verification of the model contract and the properties in use.
+
+Risks & Open Questions
+The semicolon delimiter is still not escaped, so values containing semicolons are not supported; this is retained for compatibility.
+double and the fixed exchange rates remain unchanged, although decimal is preferable for monetary values.
+
+Steps
+Design method boundaries and data-parsing rules.
+Rewrite Program.cs with safe file-resource management.
+Check compilation errors and project compatibility.
+Complete the review and document the identified issues and changes.

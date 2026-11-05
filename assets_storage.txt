@@ -4,3 +4,4 @@ Laptop;Turkey;Lenovo;ThinkPad X1;2023-01-05;2099
 Phone;USA;Apple;iPhone 15;2025-02-01;1200
 Laptop;Sweden;Lenovo;ThinkPadX1;2024-03-05;130
 Phone;USA;Samsung;GAlaxyS23;2025-06-01;95
+Laptop;Turkey;sumsung;sss;1999-12-15;123
